@@ -1,0 +1,199 @@
+>D
+sw1=0
+sw2=0
+sw1m=0
+sw2m=0
+pulse1=0
+pulse2=0
+cnt1=0
+cnt2=0
+timer1=0
+timer2=0
+timer3=0
+timer4=0
+timer5=0
+
+pwr1=0
+pwr2=0
+pwr1c=0
+pwr2c=0
+pwr1m=0
+pwr2m=0
+
+>B
+=>print "WiFi 2-Gang Switch Script"
+
+>BS
+pwr1=0
+pwr2=0
+pwr1m=0
+pwr2m=0
+=>Power1 0
+=>Power2 0
+
+timer5=0
+
+
+>F
+timer5+=1
+
+cnt1=pc[1]
+cnt2=pc[2]
+pwr1c=pwr[1] ;mapowanie stanu przekaznika
+pwr2c=pwr[2] ;mapowanie stanu przekaznika
+
+timer3+=1
+timer4+=1
+
+
+;mapowanie stanu przekaźnika przy zmianie przez MQTT
+;------------------------------------------------------------
+if pwr1c!=pwr1m 
+then
+pwr1=pwr1c
+pwr1m=pwr1c
+timer3=0
+endif
+
+if pwr2c!=pwr2m
+then
+pwr2=pwr2c
+pwr2m=pwr2c
+timer4=0
+endif
+;------------------------------------------------------------
+if timer3>3
+then
+ if chg[cnt1]>0 
+  then
+  sw1=1
+  else
+  sw1=0
+ endif
+endif
+
+;generowanie impulsu przy zmianie polozenia
+;przelacznika 
+;------------------------------------------------------------
+if sw1!=sw1m 
+then
+if timer5>5
+then
+pulse1=1
+endif
+sw1m=sw1
+endif
+
+
+;------------------------------------------------------------
+if timer4>3
+then
+ if chg[cnt2]>0
+  then
+  sw2=1
+  else
+  sw2=0
+ endif
+endif
+
+;generowanie impulsu przy zmianie polozenia
+;przelacznika
+;------------------------------------------------------------
+if sw2!=sw2m
+then
+if timer5>5
+then
+pulse2=1
+endif
+sw2m=sw2
+endif
+
+
+;------------------------------------------------------------
+; 100 ms timer
+timer1+=1
+timer2+=1
+
+
+
+;------------------------------------------------------------
+
+if pulse1==1
+and timer1>2
+and pwr1==0
+then
+=>Power1 1
+pwr1=1
+pulse1=0
+endif
+;------------------------------------------------------------
+if pulse1==1
+and timer1<=2
+and pwr1==1
+then
+=>Power1 0
+pwr1=0
+pulse1=0
+endif
+;------------------------------------------------------------
+if sw1==0
+then
+timer1=0
+endif
+
+;#####################################################################
+
+if pulse2==1
+and timer2>2
+and pwr2==0
+then
+=>Power2 1
+pwr2=1
+pulse2=0
+endif
+;------------------------------------------------------------
+if pulse2==1
+and timer2<=2
+and pwr2==1
+then
+=>Power2 0
+pwr2=0
+pulse2=0
+endif
+;------------------------------------------------------------
+if sw2==0
+then
+timer2=0
+endif
+
+
+;##################################################################
+>S
+
+;to avoid possible issues when increasing counters and variables
+if timer1>10
+then
+->Counter1 0
+timer1=10
+endif
+
+if timer2>10
+then
+->Counter2 0
+timer2=10
+endif
+
+if timer3>10
+then
+timer3=10
+endif
+
+if timer4>10
+then
+timer4=10
+endif
+
+if timer5>10
+then
+timer5=10
+endif
